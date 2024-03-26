@@ -1,0 +1,34 @@
+These are dimensional figures taken from a measured YY1 feeder.
+
+Feeder:
+
+Total length: 138mm
+Width/feeder: 12mm for 8mm tape
+Exit curve: 80 degrees
+Exit opening: 14mm
+Exit width: 9mm for 8mm tape (so +.5mm/side
+Base of tape: 21.5mm
+Total height: 24.5mm
+Pick start: 45mm
+Pick length: 25mm (could reduce)
+
+
+
+Tape:
+Hole Diameter: 1.5mm
+Hole from edge: 1.75mm
+Hole Pitch: 4mm
+Tape thickness: 1.6mm max
+25mm radius min curve.
+
+Pocket from non-sprocket side: min space .6mm
+
+Max thickness w pocket: 2.5 (for 8mm) 6.5 (for 12mm), 8.0 (for 16mm),
+12.0 (for 20mm).
+
+Do the tension mechanism on the TOP rather than underneeth: it will
+make it stick up a little, but it becomes easy to release the
+sprocket, it doesn't affect the component height, etc.
+
+
+
