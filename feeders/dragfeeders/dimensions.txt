@@ -28,7 +28,9 @@ Max thickness w pocket: 2.5 (for 8mm) 6.5 (for 12mm), 8.0 (for 16mm),
 
 Do the tension mechanism on the TOP rather than underneeth: it will
 make it stick up a little, but it becomes easy to release the
-sprocket, it doesn't affect the component height, etc.
+sprocket, it doesn't affect the component height, etc.  The tape will
+go over but as its rotating with the tape direction it shouldn't cause
+issues.
 
 
 
