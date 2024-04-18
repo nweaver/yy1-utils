@@ -1,9 +1,9 @@
 // Parameters for a parameterized drag feeder for the YY1 with better peeling
+
 // The idea is that instead of using the under-tape tensioner (which gives inconsistant results depending on the component, the tape, etc), this uses a toothed wheel that engages the tape and has a 2mm step length.
 
-// Layer height for the printer.  Should be .1mm, but can be changed.  This is used for the spacing on manual support.
+// Initial version does not include a curve for output feeding, instead it just ends a bit early and the tape should just be manually routed into the discharge trench.  This is designed to also make it easier to remove the excess tape.
 
-// Initial version does not include a curve for output feeding, instead it just ends a bit early and the tape should just be manually routed into the discharge trench.
 
 // The width of the tape (mm)
 feederWidth = 8;
@@ -11,15 +11,13 @@ feederWidth = 8;
 // The additional width for the entire feeder assembly
 additionalWidth = 4;
 
-// Cutoff before the end instead of a curve.
-cutoffLength = 20;
-
 // The length of a feeder unit
-feederLength = 138 - cutoffLength;
+feederLength = 118;
 
 // Where on the feeder the pick happens
-pickStart = 25 - cutoffLength;
+pickStart = 5;
 
+// And the length of the opening
 pickLength = 20;
 
 // How deep the drag feeder pin is assumed to be
@@ -34,14 +32,14 @@ frictionLocation = 75;
 // Where the base of the tape is located
 tapeBase = 21.5;
 
-// How thick the tape groove is:  Paper tape is 1.1mm thick max, plastic is 0.6mm.
+// How wide the tape groove is:  Paper tape is 1.1mm thick max, plastic is 0.6mm.
 tapeThick = 1.6;
 
 // How much to support the sprocket side
 supportLeftSize = 1.75+1.25;
 
 // How much to support the opposite side
-supportRightSide = 0.7;
+supportRightSide = 0.75;
 
 // How much additional tape clearance horizontally on each side
 tapeClearance = 0.5;
@@ -82,7 +80,6 @@ gearPinBaseHeight = .45;
 printGear = true;
 printHolder = true;
 printBase = true;
-
 printGearHolder = true;
 
 baseHeight = 8;
@@ -91,7 +88,8 @@ baseLength = 156;
 
 
 // Derived, the radius for the 
-// gear itself that engages in the tape
+// gear itself that engages in the tape:
+// The pins are 4mm apart on the tape
 gearRadius = (gearPins * 4) / (2 * PI) - gearReduction;
 
 // The distance between the center of the gear and the teeth on the tape itself
@@ -124,10 +122,10 @@ bearingCushionDepth = 0.5;
 // Thickness of the top
 topThick = 0.8;
 
-// Using 6mm magnets in the base
+// Using 8mmx3mm magnets in the base
 
-magnetRadius = 3.05;
-magnetThick = 2.2;
+magnetRadius = 4.05;
+magnetThick = 3.2;
 
 magnetLoc1 = 10;
 magnetLoc2 = feederLength - 10;
@@ -143,6 +141,9 @@ margin = .2;
 
 baseTapeHeight = tapeBase;
 profileHeight = tapeBase+3;
+
+lowProfileHeight = 12;
+lowProfileLength = 50;
 
 module profile() {
   width = feederWidth + additionalWidth;
@@ -168,41 +169,50 @@ module profile() {
            ]);
 }
 
-pivotAngle = 35;
-
 module profileFeeder(){
-
-
 difference(){
+  // Want the angle to be such that the increase in 
+  // height for each direction is half the difference.
+  
+  heightDifference = (profileHeight-lowProfileHeight)/2;
+  
+  // Added height is (1 - cos(angle) * profileHeight, so 
+  // we have cos(angle) = 1-heightDifference/profileHeight)
+  
+  profileAngle = acos(1-heightDifference/profileHeight);
   pickAt = feederLength-pickStart-pickLength;
+  lowLength = lowProfileLength;
+  curveLength = sin(profileAngle) * profileHeight;
+  
+  
+  topOfCurveHeight = (1 - cos(profileAngle)) * profileHeight + lowProfileHeight ;
+  
   union(){
   
-  
-  translate([pickAt-5,0,0]) 
-  rotate([90,0,90]) {
-    linear_extrude(pickStart+pickLength+5){profile();}  
-  }
-  translate([pickAt-5,0,0])rotate([-90,90,0])rotate_extrude(angle=-pivotAngle, $fn=100){
-    rotate(90)
-  profile();}
-  
-  translate([60,0,40.2]) 
-  
-  rotate([90,-90-pivotAngle,]) rotate_extrude(angle=-pivotAngle, $fn=100) { rotate(270) translate([0, -profileHeight*2]) profile();} 
-  
-  rotate([0,0,0]) cube([feederLength, feederWidth+additionalWidth, 3]);
-  
-  translate([0,0,-8.8])rotate([90,0,90]) linear_extrude(60){profile();}
-  
-  }
-    
-  translate([pickAt,additionalWidth/2+supportRightSide,tapeBase]) cube([pickLength,
-    feederWidth-supportRightSide,10]);
-  translate([pickAt, additionalWidth/2 + feederWidth - pinWide/2 - 1.75,
-    tapeBase-pinDepth])cube([pickLength,pinWide, 100]);
+  // First part, at the low range
+  translate([0,0,lowProfileHeight-profileHeight]) rotate([90,0,90]) linear_extrude(lowLength) profile();
 
-  
-   translate([-100,-100,-100]) cube([500,500,100]);
+  // Then the curve up: its radius along
+  // the top is profileHeight, along the bottom it is 2*profileHeight  
+  translate([lowProfileLength,0,lowProfileHeight-profileHeight+2*profileHeight]) {
+        rotate([0,90,90])
+        rotate_extrude(angle=-profileAngle, $fn=100) 
+        rotate(90) 
+        translate([0, -2*profileHeight])
+        profile();
+    }
+    
+    translate([lowProfileLength + 2 * curveLength, 0, 0]) {
+      rotate([90,0,90]) linear_extrude(feederLength - lowLength - 2 * curveLength) profile();
+    
+    
+      rotate([0,90,90])rotate_extrude(angle=-profileAngle, $fn=100) rotate(90) profile();
+    
+    }
+    
+   
+  }
+//   translate([-100,-100,-100]) cube([500,500,100]);
   }
 }
 
@@ -378,20 +388,8 @@ module gearHolder(){
 }
 
 
-if(printGear) {
-// gearHolder();
-translate([0,0,0]) 
-gearIntersection();
-}
 
-if(printHolder) {
-translate([0,0 + feederWidth+10,0])
-rotate([0,-90,0]) profileFeederAssembled();  
-}
-// displayHeads();
 
-if(printGearHolder) {
-//  translate([-30,0,0]) gearHolder();
-}
+profileFeeder();  
 
-// profileFeederAssembled();
+displayHeads();
