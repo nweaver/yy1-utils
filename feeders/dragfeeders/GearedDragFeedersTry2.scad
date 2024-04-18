@@ -5,8 +5,6 @@
 
 // Initial version does not include a curve for output feeding, instead it just ends a bit early and the tape should just be manually routed into the discharge trench.
 
-layerHeight = 0.1;
-
 // The width of the tape (mm)
 feederWidth = 8;
 
@@ -31,21 +29,21 @@ pinDepth = 5;
 pinWide = 2.4;
 
 // Where on the feeder to include the friction unit
-frictionLocation = 55;
+frictionLocation = 75;
 
 // Where the base of the tape is located
 tapeBase = 21.5;
 
 // How thick the tape groove is:  Paper tape is 1.1mm thick max, plastic is 0.6mm.
-tapeThick = 1.3;
+tapeThick = 1.6;
 
 // How much to support the sprocket side
-supportSprocketSide = 1.75+1.25;
+supportLeftSize = 1.75+1.25;
 
 // How much to support the opposite side
-supportOppositeSide = 0.7;
+supportRightSide = 0.7;
 
-// How much additional tape clearance horizontally
+// How much additional tape clearance horizontally on each side
 tapeClearance = 0.5;
 
 // Bearing inner diameter (mm)
@@ -66,7 +64,7 @@ bearingODMargin = 0.05 ;
 bearingIDMargin = 0.0;
 
 // Number of gear pins to engage the tape.
-gearPins = 16;
+gearPins = 18;
 
 // How much smaller should the gear itself be
 gearReduction = 0.3;
@@ -112,7 +110,7 @@ holderSpace = 8.0 - 1.8;
 
 sideThick = 2;
 
-springSpace = toothRadius + toothSize/sqrt(2)/2 + 0; // 0.2;
+springSpace = toothRadius + toothSize/sqrt(2)/2 + .3; // 0.2;
 
 springThick = 2.0;
 
@@ -143,9 +141,114 @@ notchWidth = baseWidth;
 
 margin = .2;
 
+baseTapeHeight = tapeBase;
+profileHeight = tapeBase+3;
+
+module profile() {
+  width = feederWidth + additionalWidth;
+  leftWidth = width - additionalWidth/2-supportLeftSize;
+  leftTapeSlot = width - additionalWidth/2 + tapeClearance;
+    rightTapeSlot = additionalWidth/2 - tapeClearance;
+  rightWidth = additionalWidth/2 + supportRightSide;
+  tapeBase = baseTapeHeight;
+  tapeTop = tapeBase + tapeThick;
+  height = profileHeight;
+  polygon([[0,0],
+          [0,height],
+           [width, height],
+           [width, 0],
+           [leftWidth, 0],
+           [leftWidth, tapeBase],
+           [leftTapeSlot, tapeBase],
+           [leftTapeSlot, tapeTop],
+           [rightTapeSlot, tapeTop],
+           [rightTapeSlot, tapeBase],
+           [rightWidth, tapeBase],
+           [rightWidth, 0]
+           ]);
+}
+
+pivotAngle = 35;
+
+module profileFeeder(){
 
 
-baseProfile = polygon(points = [[0,0],[0,baseHeight],[baseWidth, baseHeight],[baseWidth+2, 0]]);
+difference(){
+  pickAt = feederLength-pickStart-pickLength;
+  union(){
+  
+  
+  translate([pickAt-5,0,0]) 
+  rotate([90,0,90]) {
+    linear_extrude(pickStart+pickLength+5){profile();}  
+  }
+  translate([pickAt-5,0,0])rotate([-90,90,0])rotate_extrude(angle=-pivotAngle, $fn=100){
+    rotate(90)
+  profile();}
+  
+  translate([60,0,40.2]) 
+  
+  rotate([90,-90-pivotAngle,]) rotate_extrude(angle=-pivotAngle, $fn=100) { rotate(270) translate([0, -profileHeight*2]) profile();} 
+  
+  rotate([0,0,0]) cube([feederLength, feederWidth+additionalWidth, 3]);
+  
+  translate([0,0,-8.8])rotate([90,0,90]) linear_extrude(60){profile();}
+  
+  }
+    
+  translate([pickAt,additionalWidth/2+supportRightSide,tapeBase]) cube([pickLength,
+    feederWidth-supportRightSide,10]);
+  translate([pickAt, additionalWidth/2 + feederWidth - pinWide/2 - 1.75,
+    tapeBase-pinDepth])cube([pickLength,pinWide, 100]);
+
+  
+   translate([-100,-100,-100]) cube([500,500,100]);
+  }
+}
+
+
+module profileFeederAssembled(){
+    ficHigh = 24.4;
+
+  difference() {
+    profileFeeder();
+
+      
+      translate([feederLength - pickStart - pickLength, 
+        additionalWidth + feederWidth - 1.75 - pinWide,
+        tapeBase - pinDepth]) cube([pickLength, pinWide, 100]);
+        
+     
+     translate([feederLength - magnetLoc1, (feederWidth + additionalWidth)/2, -0.1]) cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
+     
+          
+     translate([feederLength - magnetLoc2, (feederWidth + additionalWidth)/2, -0.1]) cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
+     
+          
+     translate([feederLength - magnetLoc3, (feederWidth + additionalWidth)/2, -0.1]) cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
+     
+     translate([feederLength-frictionLocation, -1, ficHigh]) rotate([-90, 0, 0]) cylinder(h=100, r=gearRadius + gearPinLength+1, $fn=100);
+     
+    translate([notchOne-notchWidth/2, 20, 0]) rotate([90,0,0]) baseHoleExtrusion(); //cube([notchWidth, 100, notchHeight]);
+    
+     translate([notchTwo-notchWidth/2, 20, 0]) rotate([90,0,0]) baseHoleExtrusion(); //cube([notchWidth, 100, notchHeight]);
+   }
+   difference(){
+   translate([feederLength - frictionLocation, 0, ficHigh]) rotate([-90,0,0]) gearHolder();
+    translate([20,additionalWidth/2,-14.5]) cube(30);
+   }
+
+  }
+
+
+
+module displayHeads(){
+  color("red") {
+    translate([0,0,42]) cube([32,30,30]);
+    translate([32+25,0,42]) cube([32,30,30]);
+    }
+}
+
 
 module baseExtrusion(){
   rotate([90,0,90])
@@ -239,7 +342,7 @@ module gearHolder(){
   cylinder(h=holderSpace-bearingLength, r= bearingID/2 + 1, $fn=100);
 
   difference(){
-    cylinder(h=additionalWidth/2, r=trackRadius+3)
+    cylinder(h=additionalWidth/2, r=trackRadius+3);
   translate([-feederLength+frictionLocation,-3,0]) cube([20,20,sideThick]);
   translate([0, springSpace, -0.1]) springCutout();
   }
@@ -274,50 +377,6 @@ module gearHolder(){
     
 }
 
-module stripHolder(){
-  cube([feederLength, feederWidth + additionalWidth, 4]);
-  difference() {cube([feederLength, additionalWidth/2 + supportOppositeSide, tapeBase + topThick + tapeThick]);
-    translate([-1, additionalWidth/2 - tapeClearance, tapeBase])
-    cube([feederLength+10, 100, tapeThick]);
-  }
-  
-  difference() {
-    translate([0, feederWidth + additionalWidth/2 - supportSprocketSide, 0]) cube([feederLength, additionalWidth/2 + supportSprocketSide, tapeBase + topThick + tapeThick]);
-    translate([-1, feederWidth + additionalWidth/2 - supportSprocketSide - 1, tapeBase])
-    cube([feederLength+10, 1 + supportSprocketSide + tapeClearance , tapeThick]);
-  }
-  translate([0,0,tapeBase+tapeThick]) cube([feederLength, feederWidth+additionalWidth,topThick]);
-}
-
-module stripHolderCuts(){
-   difference(){
-      stripHolder();
-      translate([feederLength - pickStart - pickLength, additionalWidth/2+supportOppositeSide, tapeBase]) cube([pickLength, feederWidth-supportOppositeSide, 100]);
-      
-      translate([feederLength - pickStart - pickLength, 
-        additionalWidth + feederWidth - 1.75 - pinWide,
-        tapeBase - pinDepth]) cube([pickLength, pinWide, 100]);
-        
-     
-     translate([feederLength - magnetLoc1, (feederWidth + additionalWidth)/2, -0.1]) cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
-     
-          
-     translate([feederLength - magnetLoc2, (feederWidth + additionalWidth)/2, -0.1]) cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
-     
-          
-     translate([feederLength - magnetLoc3, (feederWidth + additionalWidth)/2, -0.1]) cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
-     
-     translate([feederLength-frictionLocation, -1, tapeBase+tapeOffset]) rotate([-90, 0, 0]) cylinder(h=100, r=gearRadius + gearPinLength+1, $fn=100);
-     
-    translate([notchOne-notchWidth/2, 20, 0]) rotate([90,0,0]) baseHoleExtrusion(); //cube([notchWidth, 100, notchHeight]);
-    
-     translate([notchTwo-notchWidth/2, 20, 0]) rotate([90,0,0]) baseHoleExtrusion(); //cube([notchWidth, 100, notchHeight]);
-   }
-   intersection(){
-   translate([feederLength - frictionLocation, 0, tapeBase + tapeOffset]) rotate([-90,0,0]) gearHolder();
-   cube(100);
-   }
- }
 
 if(printGear) {
 // gearHolder();
@@ -326,10 +385,9 @@ gearIntersection();
 }
 
 if(printHolder) {
-translate([20, 20,0 ]) rotate([0,-90,0]) stripHolderCuts();
+translate([0,0 + feederWidth+10,0])
+rotate([0,-90,0]) profileFeederAssembled();  
 }
+// displayHeads();
 
-if(printBase) {
-translate([-baseLength/2,20 + feederWidth+10,0])
-base();
-}
+// profileFeederAssembled();

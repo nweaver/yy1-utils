@@ -34,3 +34,40 @@ issues.
 
 
 
+Mount for top right quadrant...
+
+3 holes, 46.5mm pitch, starting 5.5mm
+from edge.
+
+Add a 4th for the slot-area insert.
+
+length 156
+
+
+Bottomr right quadrant:
+Same hole pitch, 120mm long, 10x 8mm.
+
+
+
+Height 7mm
+
+Hole diameter 2.4mm.  Uses self-tapping sheet metal
+screws so no insert necessary. x
+
+
+7 8mm
+2 12mm
+2 16mm
+
+
+For printing in bulk, have gears print fine (.08mm), strip feeder
+coarse.  Default settings for CF-PETG seems to work just fine for
+ESD-PETG.
+
+
+Clearance for belt drive: Belt is at ~32mm out, and requires 42mm of
+clearance.
+
+Closest head can get is feeder 2 within 25mm of belt.
+
+
