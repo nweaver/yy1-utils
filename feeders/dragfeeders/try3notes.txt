@@ -1,0 +1,11 @@
+Changes need to be made still:
+
+Base plate should be grooved rather than holed, and needs an end-plate
+to force alignment of the left-most feeder.  End plate should be full
+length.
+
+End needs to be pure vertical at end of current length to feed into
+discard chute.
+
+May want to clamp weight onto tape to better feed and/or see if you
+can adjust the pull duration.
