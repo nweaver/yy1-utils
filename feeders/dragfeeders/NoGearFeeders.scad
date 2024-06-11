@@ -251,11 +251,18 @@ difference(){
   }
 }
 
+module screwProfile(){
+   rotate([90,0,0]) linear_extrude(){ polygon([[-5,-0.1],[-2,2],[2,2],[5,-0.1]]);}
+
+}
+
+//screwProfile();
 
 module profileFeederAssembled(){
   difference() {
     union(){
     profileFeeder();
+
     cube([feederLength, feederWidth+additionalWidth, 1]);
     }
     translate([-10,-10,-100]) cube([100,100,100]);
@@ -271,10 +278,11 @@ module profileFeederAssembled(){
      
      
      
-      translate([feederLength - screwGap, -0.1, -0.1]) cube([8,50,3.5]);
+      // translate([feederLength - screwGap, -0.1, -0.1]) cube([8,50,3.5]);
      
   
-          
+            translate([feederLength - screwGap, 15.1, -0.1]) screwProfile();
+
 
 
     }
@@ -288,76 +296,8 @@ module profileFeederAssembled(){
 
 
 
-module displayHeads(){
-  color("red") {
-    translate([0,0,42]) cube([32,30,30]);
-    translate([32+25,0,42]) cube([32,30,30]);
-    }
-}
-
-
-module baseExtrusion(){
-  rotate([90,0,90])
-  linear_extrude(height=baseLength){
-     polygon(points = [[0,0],[0,baseHeight],[baseWidth, baseHeight],[baseWidth+2, 0]]);
-  }
-}
-
-// Actual grove is basewidth/2 centered, 1.8mm wide 
- module baseHoleExtrusion(){
-   rotate([0,0,0])
-   linear_extrude(height=100) {
-      polygon(points = [[baseWidth/2-.9, -1],
-      [baseWidth/2-.9, baseHeight],
-      [baseWidth/2+.9, baseHeight],
-      [baseWidth/2+.9, -1]]);}}
-      
-
-module gearTeeth() {
-  for(i = [0: gearPins * 2]) {
-     rotate([0, 0, i * (360 / (gearPins * 2))])
-     translate([toothRadius,-1 * toothSize / sqrt(2),0]) rotate([0,0,45]) cube([toothSize,toothSize,gearHeight]);
-  
-  }
-  cylinder(h=gearHeight, r=toothRadius);
-
-  }
-
-module gear(){
-  // Circumference = 2 * pi * r
-  cylinder(h=1, r=gearRadius, $fn=100);
-  difference(){
-    gearTeeth();
-     translate([0,0,gearHeight-bearingLength]) cylinder(h=feederWidth, r=bearingOD/2 + bearingODMargin, $fn=100);
-     translate([0,0,gearHeight-bearingLength-bearingCushionDepth]) cylinder(h=feederWidth, r = bearingOD/2 - 1, $fn=100);
-  }
-  for(i = [0:gearPins]) {
-    translate([0,0,gearPinBaseHeight])
-    rotate([0, 90, i * (360 / gearPins)]){
-    cylinder(h=gearPinLength + gearRadius, r=gearPinRadius, $fn=100);
-    translate([0,0,gearPinLength + gearRadius]) sphere(r=gearPinRadius, $fn=100);
-    }
-  }
-}
 
 // make the center hollow so the bearing can be pushed out
-module gearIntersection(){
-  difference(){
-     gear();
-     translate([0,0,-1]) cylinder(h=100, r=bearingOD/2 -1, $fn=100);
-     for(i = [0 : 8]) rotate([0,0,i*45])
-     translate([0,-10,-1]) cylinder(h=2.1, r=1.5, $fn=100);
-   }
-
-}
-
-
-module spring(){
- translate([-springLong, 0, 0]) cube([springLong * 2, springThick, sideThick]);
- translate([-springCube * sqrt(2)/2,.2 ,0]) rotate([0,0,-45]) cube([springCube, springCube, 7]);
-   translate([0, 0, 0]) rotate([0,0,45]) cube([springThick / sqrt(2), springThick/sqrt(2), 6]);
-}
-
 function getOffset(i) = (i <= 0) ? 0 : getOffset(i-1) + feederBank[i-1] + additionalWidth;
 
 

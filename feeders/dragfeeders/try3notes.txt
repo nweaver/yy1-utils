@@ -9,3 +9,30 @@ discard chute.
 
 May want to clamp weight onto tape to better feed and/or see if you
 can adjust the pull duration.
+
+
+
+Need to improve:
+
+a) Direct mount into mounting plate, rather than magnets.
+
+b) Keep the slightly wider pinhole on the no-gear version, adjust the
+pick opening to have a chamfer so it can print clean.
+
+c) Have a chamfer starting at .4mm and growing down the drag area to
+get better/cleaner tape pulling.  Something that will be 1 width for
+the peel point, and fan out to 2/3/4...
+
+d) Chamfer for screw clearance needs to be a bit longer and 1mm
+deeper...
+
+e) Need cheap plastic tape & reel component for testing...
+
+f) Mounting holes should be .2mm radius larger.
+
+g) Move the spring in .2mm?
+
+h) String together on 3mm diameter (1.5mm radius) steel rod, first one
+anchored, rest strung on.
+
+i) Shave .4mm off additional width for geared version.
