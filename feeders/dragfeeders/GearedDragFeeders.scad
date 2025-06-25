@@ -92,6 +92,13 @@ baseWidth = 10;
 baseLength = 156;
 
 
+holeX = [30, 95];
+holeY = [6];
+holeR = 1.0;
+
+assemblyHoleR = 1.6;
+
+
 // Derived, the radius for the 
 // gear itself that engages in the tape:
 // The pins are 4mm apart on the tape
@@ -118,7 +125,7 @@ springThick = 1.6;
 
 
 // Fudge factor to the specific printer, to make sure the tension is good..
-springSpace = toothRadius+springThick+3.2; // 0.2;
+springSpace = toothRadius+springThick+2.8; // 0.2;
 
 
 springMargin = 0.8;
@@ -158,6 +165,9 @@ lowProfileLength = 55;
 
 frictionHeight = lowProfileTapeBase + tapeOffset;
 trackRadius = gearRadius + 2.2;
+
+
+pickWide = feederWidth-additionalWidth/2-1.8;
 
 
 module profile() {
@@ -279,31 +289,24 @@ module profileFeederAssembled(){
         additionalWidth + feederWidth - 2.0 - pinWide,
         tapeBase - pinDepth]) cube([dragLength, pinWide-.5, 100]);
 
+        
      translate([feederLength - pickStart - pickLength,
-        additionalWidth/2+.75, tapeBase+0.01]) 
-        cube([pickLength, feederWidth-additionalWidth/2-2.0, 100]);
-         translate([feederLength - magnetLoc1, (feederWidth + additionalWidth)/2, -0.1]) { cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
-         // cylinder(h=100, r=2, $fn=100);
-       }
-          
+        additionalWidth/2+.75, tapeBase + tapeThick - 0.01]){
+        cube([pickLength, pickWide, 100]);
+        rotate([0,-75,0]) cube([pickLength, pickWide, 100]);    
+        translate([pickLength, 0, 0]) intersection () {
+           rotate([0,0,45]) cube([100, 100, 100]);
+           cube([feederWidth, pickWide , 100]);
+        
+        }
+     }
      
      
-     translate([feederLength - magnetLoc2+9, (feederWidth + additionalWidth)/2, -0.1]) { cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
-              cylinder(h=100, r=2, $fn=100);
-
-       }    
-     
-      translate([feederLength - magnetLoc2-4, -0.1, -0.1]) cube([8,50,3.5]);
      
   
-          
-     translate([feederLength - magnetLoc3, (feederWidth + additionalWidth)/2, -0.1]) { cylinder(h=magnetThick+.1, r=magnetRadius, $fn=100);
-         cylinder(h=100, r=2, $fn=100);
-       } 
 
-        translate([notchOne-notchWidth/2, 20, 0]) rotate([90,0,0]) baseHoleExtrusion(); //cube([notchWidth, 100, notchHeight]);
-    
-     translate([notchTwo-notchWidth/2, 20, 0]) rotate([90,0,0]) baseHoleExtrusion(); //cube([notchWidth, 100, notchHeight]);
+
+
 
           translate([frictionLocation, additionalWidth/2, frictionHeight])
        rotate([-90,0,0]) cylinder(h=100, r=trackRadius, $fn=100);
@@ -319,6 +322,55 @@ module profileFeederAssembled(){
     translate([0,additionalWidth/2 + feederWidth - supportLeftSide,10]) cube([100,1.25,lowProfileTapeBase-10]);
          
 
+
+}
+
+module screwProfile(){
+   rotate([90,0,0]) linear_extrude(){ 
+   polygon([[-0.3, -0.01], [4, 3.2], [14, 3.2], [18, -0.01]]);}
+   
+   //polygon([[-6,-0.1],[-3,2.5],[3,2.5],[6,-0.1]]);}
+
+}
+
+
+module profileFeederHoles(){
+champfer = 1.0;
+   difference(){
+      profileFeederAssembled();
+      for(x = holeX) {
+        for (y = holeY) {
+           translate([x, y, -1]) cylinder(h=10, r=holeR, $fn=100);
+           // add a small addition to handle plastic deformation
+           translate([x, y, -1]) cylinder(h=1.6, r=holeR + 0.5, $fn=100);
+        
+        }
+      }
+      
+      for(x = holeX) {
+        for (y = holeY) {
+            translate([x-4, y-20, 3.5]) rotate([-90,0,0]) cylinder(h=1000, r=assemblyHoleR, $fn=100);
+        
+        }
+      }
+      
+      // Add a .2mm undercut to handle the first layer
+      // spewing out a bit, plus the profile for the hex screws hole
+      translate([0 , 25.1, -0.1]) screwProfile();
+
+      
+      
+      translate([-champfer/sqrt(2),0,0])  rotate([0,0,-45]) cube([champfer, champfer, 100]);
+      
+      translate([0, feederWidth+additionalWidth-champfer/sqrt(2), 0]) rotate([0,0,45]) cube([champfer, champfer, 100]);
+      
+     translate([95+6, feederWidth/2 + additionalWidth/2, -0.1]) cylinder(h=6, r=3, $fn=100); 
+     translate([95-6, feederWidth/2 + additionalWidth/2, -0.1]) cylinder(h=6, r=3, $fn=100); 
+
+     }
+      
+      
+      //screwProfile();
 
 }
 
@@ -513,7 +565,8 @@ module gearHolderTest(){
 
 
 
-rotate([0,-90,0])  profileFeederAssembled();  
+rotate([0,-90,0])  profileFeederHoles();  
+
 // translate([trackRadius+2,(additionalWidth + feederWidth)/2, 0]) gearIntersection();
 
 
