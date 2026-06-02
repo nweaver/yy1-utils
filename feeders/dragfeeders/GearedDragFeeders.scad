@@ -6,7 +6,7 @@
 
 
 // The width of the tape (mm)
-feederWidth = 8;
+feederWidth = 16;
 
 // The additional width for the entire feeder assembly
 additionalWidth = 4;
@@ -371,7 +371,7 @@ champfer = 1.0;
       
       
       //screwProfile();
-
+   cube([2,feederWidth+additionalWidth,6]);
 }
 
 
